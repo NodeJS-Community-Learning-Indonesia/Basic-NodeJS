@@ -18,6 +18,6 @@ app.use("/users", require("./routes/usersRoute"));
 app.use("/todos", require("./routes/todosRoute"));
 
 // running the server
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT || 8080, () => {
     console.log(`Server Running on ${process.env.PORT}`.blue.underline);
 });

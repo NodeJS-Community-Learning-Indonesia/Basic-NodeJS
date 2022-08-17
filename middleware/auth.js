@@ -1,11 +1,25 @@
+const wrapper = require("../utils/responses");
+const jwt = require("jsonwebtoken");
+
 const isAuthenticate = (req, res, next) => {
     const bearerHeader = req.headers.authorization;
     if (typeof bearerHeader !== "undefined") {
         const bearerToken = bearerHeader.split(" ")[1];
-        req.token = bearerToken;
-        next();
+        jwt.verify(bearerToken, process.env.SECRET_KEY, (err, data) => {
+            if (err) {
+                return wrapper.error(
+                    res,
+                    null,
+                    "Not Authorized (No Token)",
+                    401
+                );
+            }
+            req.user = data;
+            next();
+        });
+        // req.token = bearerToken;
     } else {
-        res.status(401).json({ msg: "Not Authorized (No Token)" });
+        return wrapper.error(res, null, "Not Authorized (No Token)", 401);
     }
 };
 

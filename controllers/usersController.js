@@ -1,23 +1,28 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const wrapper = require("../utils/responses");
 
 // @desc     Register Handler
 // @route    POST /users/register
 // @access   Public
 const registerHandler = async (req, res) => {
     if (!req.body.name || !req.body.email || !req.body.password) {
-        res.status(400).json({ msg: "Missing Credentials" });
+        return wrapper.error(res, null, "Missing Credentials");
     }
 
     if (req.body.password.length < 3) {
-        res.status(400).json({ msg: "Password at least must be 3 characters" });
+        return wrapper.error(
+            res,
+            null,
+            "Password at least must be 3 characters"
+        );
     }
 
     try {
         const user = await User.findOne({ email: req.body.email });
         if (user) {
-            res.status(400).json({ msg: "User already existed" });
+            return wrapper.error(res, null, "User already existed");
         } else {
             const salt = await bcrypt.genSalt(10);
             const hassPassword = await bcrypt.hash(req.body.password, salt);
@@ -27,14 +32,10 @@ const registerHandler = async (req, res) => {
                 password: hassPassword,
             });
             await newUser.save();
-            res.status(200).json({
-                msg: "Account has been created",
-                email: req.body.email,
-            });
+            return wrapper.success(res, newUser, "Account has been created");
         }
     } catch (error) {
-        res.status(400).json({ msg: "Something Wrong" });
-        console.log(error);
+        return wrapper.error(res, null, "Something Wrong");
     }
 };
 
@@ -43,20 +44,22 @@ const registerHandler = async (req, res) => {
 // @access   Public
 const loginHandler = async (req, res) => {
     if (!req.body.email || !req.body.password) {
-        res.status(400).json({ msg: "Missing Credentials" });
+        const msg = "Missing credentials";
+        return wrapper.error(res, null, msg);
     }
     // try {
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
-        res.status(400).json({ msg: "Email is not found" });
+        return wrapper.error(res, null, "Email is not found");
     }
     if (await bcrypt.compare(req.body.password, user.password)) {
-        res.status(200).json({
+        const data = {
             email: user.email,
             token: generateToken(user),
-        });
+        };
+        return wrapper.success(res, data, "success login");
     } else {
-        res.status(400).json({ msg: "Password is wrong" });
+        return wrapper.error(res, null, "Password is wrong");
     }
     // } catch (error) {
     //     console.log(error)
