@@ -1,5 +1,5 @@
 const success = (res, data, msg, code = 200) => {
-    return res.status(code).json({
+    return res.status(200).json({
         success: true,
         data,
         msg,
@@ -7,8 +7,8 @@ const success = (res, data, msg, code = 200) => {
     });
 };
 
-const error = (res, data, msg, code = 400) => {
-    return res.status(code).json({
+const error = (res, msg, data = "", code = 400) => {
+    return res.status(200).json({
         success: false,
         data,
         msg,
